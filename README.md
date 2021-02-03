@@ -1,0 +1,2 @@
+# StudyApp
+School Management System
