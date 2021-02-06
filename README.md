@@ -565,16 +565,323 @@
         ```
 - Summary
 ## Chapter 3: Extending Your Blog Application
-Creating custom template tags and filters 68
-Custom template tags 68
-Custom template filters 73
-Adding a sitemap to your site 76
-Creating feeds for your blog posts 80
-Adding full-text search to your blog 82
-Installing PostgreSQL 83
-Simple search lookups 84
-Searching against multiple fields 84
-Building a search view 85
+    • Membuat custom template tags dan filters
+    • Membuat sitemap dan post feed
+    • Implementasi full-text search dengan PostgreSQL
+
+- Creating custom template tags and filters
+    - referensi : https://docs.djangoproject.com/en/3.0/ref/templates/builtins/.
+
+- Custom template tags
+    - ada 2 macam:
+        • simple_tag: memproses data dan mereturn string
+        • inclusion_tag: memproses data dan mereturn render template
+
+
+    - Buat directory blog/templatetags
+    - buat file kosong __init__.py
+    - buat file blog_tags.py
+        ```
+            from django import template
+            from ..models import Post
+
+            register = template.Library()
+
+            @register.simple_tag
+            def total_posts():
+                return Post.published.count()
+        ```
+    - blog/templates/base.html
+        ```
+            {% load blog_tags %}
+            ...
+            <h2>My blog</h2>
+                <p>This is my blog. I've written {% total_posts %} posts so far.</p>
+        ```
+        - Maka dibawah Blog title akan muncul jumlah total posts
+    - Pada file blog_tags.py, tambahkan:
+        ```
+        @register.inclusion_tag('blog/post/latest_posts.html')
+        def show_latest_posts(count=5):
+            latest_posts = Post.published.order_by('-publish')[:count]
+            return {'latest_posts': latest_posts}
+        ```
+    - Buat Template baru blog/post/latest_posts.html:
+        ```
+        <ul>
+            {% for post in latest_posts %}
+            <li>
+                <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+        ```
+    - Edit blog/base.html
+        ```
+        ...
+        <p>This is my blog. I've written {% total_posts %} posts so far.</p>
+                <h3>Latest posts</h3>
+                {% show_latest_posts 3 %}
+        ```
+        - Maka akan muncul latest post pada side bar
+    - Edit blog_tags.py
+    ```
+    from django.db.models import Count
+    
+    @register.simple_tag
+    def get_most_commented_posts(count=5):
+        return Post.published.annotate( total_comments=Count('comments')
+        ).order_by('-total_comments')[:count]
+    ```
+    - Edit base.html
+    ```
+    <h3>Most commented posts</h3>
+            {% get_most_commented_posts as most_commented_posts %}
+            <ul>
+                {% for post in most_commented_posts %}
+                <li>
+                    <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+    ```
+    - Maka pada side bar akan muncul commented posts
+    
+- Custom template filters
+    - contoh
+    - {{ variable|my_filter }}
+    - {{ variable|my_filter:"foo" }} --> dengan argument
+    - {{ variable|filter1|filter2 }} --> multiple filter
+    - doc : https://docs.djangoproject.com/en/3.0/ref/templates/builtins/#built-in-filterreference.
+    - https://docs.djangoproject.com/en/3.0/howto/custom-templatetags/#writing-custom-template-filters.
+    -
+    - Install markdown --> `pip install markdown`
+    - edit blog_tags.py
+        ```
+        from django.utils.safestring import mark_safe
+        import markdown
+
+        @register.filter(name='markdown')
+        def markdown_format(text):
+            return mark_safe(markdown.markdown(text))
+        ```
+    - Tambahkan Pada bagian atas setelah `extends` `blog/post/list.html` dan detail.html
+    ` {% load blog_tags %} `
+    - pada post/detail.html, replace {{ post.body|linebreaks }} dengan {{ post.body|markdown }}
+    - pada post/list.html, replace {{ post.body|truncatewords:30|linebreaks }} dengan {{ post.body|markdown|truncatewords_html:30 }}
+    - Coba Buat postingan menggunakan format markdown
+        - Buka http://127.0.0.1:8000/admin/blog/post/add/
+        - maka jika dilihat format akan menjadi markdown
+        - doc: https://daringfireball.net/projects/markdown/basics.
+
+- Adding a sitemap to your site
+    - doc : https://docs.djangoproject.com/en/3.0/ref/contrib/sitemaps/
+    - settings.py
+        ```
+        SITE_ID = 1
+
+        # Application definition
+        INSTALLED_APPS = [
+        # ...
+        'django.contrib.sites',
+        'django.contrib.sitemaps',
+        ]
+        ```
+        python manage.py migrate
+
+    - Buat baru blog/sitemaps.py
+        ```
+        from django.contrib.sitemaps import Sitemap
+        from .models import Post
+
+        class PostSitemap(Sitemap):
+            changefreq = 'weekly'
+            priority = 0.9
+            
+            def items(self):
+                return Post.published.all()
+            def lastmod(self, obj):
+                return obj.updated
+        ```
+    - BUka core/urls.py
+        ```
+        from django.urls import path, include
+        from django.contrib import admin
+        from django.contrib.sitemaps.views import sitemap
+        from blog.sitemaps import PostSitemap
+
+        sitemaps = {
+        'posts': PostSitemap,
+        }
+
+        urlpatterns = [
+            path('admin/', admin.site.urls),
+            path('blog/', include('blog.urls', namespace='blog')),
+            path('sitemap.xml', sitemap, {'sitemaps': sitemaps},
+            name='django.contrib.sitemaps.views.sitemap')
+            ]
+        ```
+    - BUka http://127.0.0.1:8000/sitemap.xml, akan muncul bentuk xml dari site kita, xml berpengaruh pada efektivitas search engine
+
+    - http://127.0.0.1:8000/admin/sites/site/ untuk menambah daftar domain yang digunakan di sitemap
+
+
+- Creating feeds for your blog posts
+    - ref:  Django syndication feed framework at https://docs.djangoproject.com/en/3.0/ref/contrib/syndication/
+    - secara dinamis akan mengenerate RSS atau atom feed. web feed data format(biasanya XML) memungkinkan user mendapatkan update feed menggunakan feed agragator.
+    - buat file baru, blog/feeds.py
+        ```
+        from django.contrib.syndication.views import Feed
+        from django.template.defaultfilters import truncatewords
+        from django.urls import reverse_lazy
+        from .models import Post
+        class LatestPostsFeed(Feed):
+        title = 'My blog'
+        link = reverse_lazy('blog:post_list')
+        description = 'New posts of my blog.'
+        def items(self):
+        return Post.published.all()[:5]
+        def item_title(self, item):
+        return item.title
+        def item_description(self, item):
+        return truncatewords(item.body, 30)
+        ```
+    - tambahkan pada blog/urls.py
+        ```
+        from .feeds import LatestPostsFeed
+
+        urlpatterns = [
+        # ...
+        path('feed/', LatestPostsFeed(), name='post_feed'),
+        ]
+        ```
+    - buka http://127.0.0.1:8000/blog/feed/, maka akan melihat format xml
+    - buka blog/base.html, tempatkan pada side bar, dibawah total post
+        ```
+        <p>
+        <a href="{% url "blog:post_feed" %}">Subscribe to my RSS feed</a>
+        </p>
+        ```
+    - Buka http://127.0.0.1:8000/blog/
+
+- Adding full-text search to your blog
+    - pencarian dalam blog bisa menggunakan cara filter ORM, misal
+        ```
+        from blog.models import Post
+        Post.objects.filter(body__contains='framework')
+        ```
+    - Untuk pencarian secara kompleks, bisa menggunakan fitur dari postgreSQL dan modul `django.contrib.postgres`
+    - docs: https://www.postgresql.org/docs/12/static/textsearch.html
+
+- Installing PostgreSQL
+    - https://www.postgresql.org/download/
+    - pip install psycopg2-binary
+    - Buat user & password baru, dan memberi hak akses 
+        ```
+        psql -U postgres
+        CREATE USER aris;
+        ALTER USER aris PASSWORD 'aris1985';
+        ALTER USER aris CREATEDB;
+        ```
+    - buat database melalui user 'aris'
+        ```
+        createdb -U aris blog;
+        ```
+    - settings.py
+    ```
+    DATABASES = {
+        'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'blog',
+        'USER': 'blog',
+        'PASSWORD': '*****',
+        }
+    ```
+    - python manage.py migrate
+    - python manage.py createsuperuser
+    - http://127.0.0.1:8000/admin/
+    - karena ganti database postgres, semua post lama hilang. sekarang buat post baru agar search fitur bisa di terapkan
+- Simple search lookups
+    - Sekarang bisa melakukan search single field, contoh:
+        ```
+        from blog.models import Post
+        Post.objects.filter(body__search='django')
+        ```
+- Searching against multiple fields
+    - search multiple fields, memungkinkan  search terhadap title dan body dari Post model
+    - contoh :
+        ```
+        from django.contrib.postgres.search import SearchVector
+        from blog.models import Post
+
+        Post.objects.annotate( search=SearchVector('title', 'body'),
+            ).filter(search='django')
+        ```
+
+- Building a search view
+    - Membuat view untuk search post
+    - edit forms.py
+        ```
+        class SearchForm(forms.Form):
+            query = forms.CharField()
+        ```
+    - edit views.py
+        ```
+        from django.contrib.postgres.search import SearchVector
+        from .forms import EmailPostForm, CommentForm, SearchForm
+
+        def post_search(request):
+        form = SearchForm()
+        query = None
+        results = []
+        if 'query' in request.GET:
+            form = SearchForm(request.GET)
+            if form.is_valid():
+                query = form.cleaned_data['query']
+                results = Post.published.annotate(
+                    search=SearchVector('title', 'body'),
+                    ).filter(search=query)
+        return render(request, 'blog/post/search.html',
+        {'form': form,
+        'query': query,
+        'results': results})
+
+        ```
+    - Buat blog/post/search.html
+        ```
+        {% extends "blog/base.html" %}
+        {% load blog_tags %}
+
+        {% block title %}Search{% endblock %}
+
+        {% block content %}
+            {% if query %}
+                <h1>Posts containing "{{ query }}"</h1>
+                <h3>
+                    {% with results.count as total_results %}
+                    Found {{ total_results }} result{{ total_results|pluralize }}
+                    {% endwith %}
+                </h3>
+                {% for post in results %}
+                <h4><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></h4>
+                    {{ post.body|markdown|truncatewords_html:5 }}
+                {% empty %}
+                    <p>There are no results for your query.</p>
+                {% endfor %}
+                <p><a href="{% url 'blog:post_search' %}">Search again</a></p>
+            {% else %}
+                <h1>Search for posts</h1>
+                <form method="get">
+                    {{ form.as_p }}
+                    <input type="submit" value="Search">
+                </form>
+            {% endif %}
+        {% endblock %}
+        ```
+    - Edit urls.py
+        - `path('search/', views.post_search, name='post_search'),`
+    - http://127.0.0.1:8000/blog/search/
+
 Stemming and ranking results 88
 Weighting queries 89
 Searching with trigram similarity 90
