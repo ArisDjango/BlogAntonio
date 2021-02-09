@@ -1,40 +1,47 @@
 ## Chapter 1: Building a Blog Application 1
-- Installing Django
-- Creating an isolated Python environment
-- Installing Django with pip
-- Creating your first project
-    - django-admin startproject mysite
-    - cd mysite
+### Instalasi Django dan Struktur App
+- Clone repo dan venv
+    - cd PYTHON_FOLDER
+    - git clone https://github.com/ArisDjango/BlogAntonio.git
+    - cd BlogAntonio
+    - python -m venv venv
+    - Set-ExecutionPolicy Unrestricted -Scope Process
+    - & d:/TUTORIAL/PYTHON/CrudEmployeeSimple/venv/Scripts/Activate.ps1
+
+- Instalasi Django
+    - python.exe -m pip install --upgrade pip
+    - pip install django
+
+- membuat core project
+    - django-admin startproject core
+    - rename root foleder/core menjadi blogApp
+    - cd blogApp
     - python manage.py migrate
-- Running the development server
     - python manage.py runserver
-- Project settings
-    - penjelasan core/settings.py
-- Projects and applications
-    - penjelasan struktur app
-- Creating an application
+- Membuat app 'blog'
     - python manage.py startapp blog
-- Designing the blog data schema
-    - model.py
-- Activating the application
     - register di settings.py
-- Creating and applying migrations
+- Mendesain blog data model
+    - model.py
     - python manage.py makemigrations blog
     - python manage.py migrate
-- Creating an administration site for models
-- Creating a superuser
-    - python manage.py createsuperuser
-- The Django administration site
-    - python manage.py runserver
-    - http://127.0.0.1:8000/admin/
-- Adding models to the administration site
-    - admin.py
-        ```
-            from .models import Post
 
-            admin.site.register(Post)
-        ```
-- Customizing the way that models are displayed
+### Menampilkan Admin panel
+- Membuat admin panel untuk models
+    - registrasi models pada models.p
+        - admin.py
+            ```
+                from .models import Post
+
+                admin.site.register(Post)
+            ```
+    -  superuser
+        - python manage.py createsuperuser
+    - Admin panel siap
+        - python manage.py runserver
+        - http://127.0.0.1:8000/admin/
+    
+- Custom display di admin panel
 
     - admin.py
 
@@ -49,9 +56,8 @@
             date_hierarchy = 'publish'
             ordering = ('status', 'publish')
     ```
-- Working with QuerySets and managers
-    - ORM
-- Creating objects
+### Mencoba QuerySets
+- Create objects
     - Mencoba posting (melalui shell)
     - python manage.py shell
     ```
@@ -64,7 +70,7 @@
         ... author=user)
         >>> post.save()
     ```
-- Updating objects
+- Update objects
     ```
         >>> post.title = 'New title'
         >>> post.save()
@@ -74,7 +80,7 @@
         >>> all_posts = Post.objects.all()
         >>> all_posts
     ```
-- Using the filter() method
+- Menggunakan filter() method
     ```
         Post.objects.filter(publish__year=2021)
         Post.objects.filter(publish__year=2021, author__username='admin')
@@ -84,7 +90,7 @@
         Post.objects.filter(publish__year=2020) \
             .filter(author__username='admin')
     ```
-- Using exclude() --> ascending/descending
+- Menggunakan exclude() --> ascending/descending
     ```
         Post.objects.filter(publish__year=2020) \
         .exclude(title__startswith='Why')
@@ -109,6 +115,7 @@
         • When you explicitly call list() on them
         • When you test them in a statement, such as bool(), or, and, or if
     ```
+### Model Managers
 - Creating model managers
     - 'objects' adalah model manager default ketika membuat model
     - model manager bisa di custom
@@ -123,8 +130,7 @@
             objects = models.Manager() # The default manager.
             published = PublishedManager() # Our custom manager.
     ```
-- Building list and detail views
-    - ORM
+### views
 - Creating list and detail views ( Funtion Based View)
     ```
         from django.shortcuts import render, get_object_or_404
@@ -141,6 +147,21 @@
                                     publish__day=day)
             return render(request,'blog/post/detail.html',{'post': post})
     ```
+- Using class-based views
+    - selain menggunakan FBV bisa juga menggunakan class based view
+        - tambahkan pada views.py
+            ```
+                class PostListView(ListView):
+                    queryset = Post.published.all()
+                    context_object_name = 'posts'
+                    paginate_by = 3
+                    template_name = 'blog/post/list.html'
+            ```
+        - bypass blog/urls.py
+            ```
+            path('', views.PostListView.as_view(), name='post_list'),
+            ```
+### urls
 - Adding URL patterns for your views
     - buat blog/urls.py
         ```
@@ -158,6 +179,7 @@
             ]
         ```
 - Canonical URLs for models
+
     ```
     def get_absolute_url(self):
         return reverse('blog:post_detail',
@@ -165,6 +187,7 @@
                              self.publish.month,
                              self.publish.day, self.slug])
     ```
+### template
 - Creating templates for your views
     - blog:
         ```
@@ -214,28 +237,15 @@
     - buka blog/post/list.html, tempatkan tag pagination dibawah {content}  
     `{% include "pagination.html" with page=posts %}`
     - tes http://127.0.0.1:8000/blog/
-- Using class-based views
-    - selain menggunakan FBV bisa juga menggunakan class based view
-    - tambahkan pada views.py
-        ```
-            class PostListView(ListView):
-                queryset = Post.published.all()
-                context_object_name = 'posts'
-                paginate_by = 3
-                template_name = 'blog/post/list.html'
-        ```
-    - bypass blog/urls.py
-        ```
-        path('', views.PostListView.as_view(), name='post_list'),
-        ```
-- Summary
+
+    
 ## Chapter 2: Enhancing Your Blog with Advanced Features
-- Sharing posts by email
-    - Algoritma pengiriman email
-        - buat form.py
-        - buat views
-        - by pass url
-        - buat template untuk menampilkannya
+### Sharing posts by email
+- Algoritma pengiriman email
+    - buat form.py
+    - buat views
+    - by pass url
+    - buat template untuk menampilkannya
 - Creating forms with Django
     - Django punya 2 base class untuk form:
         - Form : standartd
@@ -266,7 +276,7 @@
                 form = EmailPostForm()
             return render(request, 'blog/post/share.html', {'post': post,'form': form})
     ```
--  Sending emails with Django
+- Sending emails with Django
     - konfigurasi Simple Mail Transfer Protocol (SMTP) server
         - settings.py
         - untuk mencoba di django shell kita butuh setting backend console (setelah dipastikan fungsi email berjalan, bisa di nonaktifkan)
@@ -334,8 +344,8 @@
                 </p>
             ```
     - cek 127.0.0.1:8000/blog/
-
-- Creating a comment system
+### Comment Form
+- Algoritma comment system
     1. membuat model untuk menyimpan comments
     2. membuat form untuk submit comments dan validasi input data
     3. membuat view untuk memproses form dan menyimpan comment ke database
@@ -456,7 +466,7 @@
         
         ```
     - cek tampilan form comment http://127.0.0.1:8000/blog/
-    
+### Tag
 - Adding the tagging functionality
     - pip install django_taggit
     - register pada settings.py --> `taggit`
@@ -563,14 +573,14 @@
             There are no similar posts yet.
         {% endfor %}
         ```
-- Summary
+
 ## Chapter 3: Extending Your Blog Application
     • Membuat custom template tags dan filters
     • Membuat sitemap dan post feed
     • Implementasi full-text search dengan PostgreSQL
 
-- Creating custom template tags and filters
-    - referensi : https://docs.djangoproject.com/en/3.0/ref/templates/builtins/.
+### Creating custom template tags and filters
+- referensi : https://docs.djangoproject.com/en/3.0/ref/templates/builtins/.
 
 - Custom template tags
     - ada 2 macam:
@@ -580,6 +590,7 @@
 
     - Buat directory blog/templatetags
     - buat file kosong __init__.py
+- Total Post
     - buat file blog_tags.py
         ```
             from django import template
@@ -599,6 +610,7 @@
                 <p>This is my blog. I've written {% total_posts %} posts so far.</p>
         ```
         - Maka dibawah Blog title akan muncul jumlah total posts
+- Latest Post
     - Pada file blog_tags.py, tambahkan:
         ```
         @register.inclusion_tag('blog/post/latest_posts.html')
@@ -624,15 +636,16 @@
                 {% show_latest_posts 3 %}
         ```
         - Maka akan muncul latest post pada side bar
+- Most Commented
     - Edit blog_tags.py
-    ```
-    from django.db.models import Count
-    
-    @register.simple_tag
-    def get_most_commented_posts(count=5):
-        return Post.published.annotate( total_comments=Count('comments')
-        ).order_by('-total_comments')[:count]
-    ```
+        ```
+            from django.db.models import Count
+            
+            @register.simple_tag
+            def get_most_commented_posts(count=5):
+                return Post.published.annotate( total_comments=Count('comments')
+                ).order_by('-total_comments')[:count]
+        ```
     - Edit base.html
     ```
     <h3>Most commented posts</h3>
@@ -645,7 +658,7 @@
                 {% endfor %}
             </ul>
     ```
-    - Maka pada side bar akan muncul commented posts
+    - Maka pada side bar akan muncul Most commented posts
     
 - Custom template filters
     - contoh
@@ -674,6 +687,7 @@
         - maka jika dilihat format akan menjadi markdown
         - doc: https://daringfireball.net/projects/markdown/basics.
 
+### Sitemap (xml)
 - Adding a sitemap to your site
     - doc : https://docs.djangoproject.com/en/3.0/ref/contrib/sitemaps/
     - settings.py
@@ -725,7 +739,7 @@
 
     - http://127.0.0.1:8000/admin/sites/site/ untuk menambah daftar domain yang digunakan di sitemap
 
-
+### Feeds
 - Creating feeds for your blog posts
     - ref:  Django syndication feed framework at https://docs.djangoproject.com/en/3.0/ref/contrib/syndication/
     - secara dinamis akan mengenerate RSS atau atom feed. web feed data format(biasanya XML) memungkinkan user mendapatkan update feed menggunakan feed agragator.
@@ -764,6 +778,7 @@
         ```
     - Buka http://127.0.0.1:8000/blog/
 
+### Search
 - Adding full-text search to your blog
     - pencarian dalam blog bisa menggunakan cara filter ORM, misal
         ```
@@ -819,6 +834,7 @@
         ```
 
 - Building a search view
+    - for views.py docs: https://docs.djangoproject.com/en/3.1/ref/contrib/postgres/search/
     - Membuat view untuk search post
     - edit forms.py
         ```
@@ -882,8 +898,57 @@
         - `path('search/', views.post_search, name='post_search'),`
     - http://127.0.0.1:8000/blog/search/
 
-Stemming and ranking results 88
-Weighting queries 89
-Searching with trigram similarity 90
-Other full-text search engines 91
-Summary 91
+- Stemming and ranking results
+    - proses  kalimat hasil search menjadi kalimat dasar, dan sorting berdasarkan seberapa sering post tampil
+    - edit views.py
+        ```
+        from django.contrib.postgres.search import SearchVector, SearchQuery,
+        SearchRank
+
+        #result = ... query)
+
+        search_vector = SearchVector('title', 'body')
+        search_query = SearchQuery(query)
+        results = Post.published.annotate(
+        search=search_vector,
+            rank=SearchRank(search_vector, search_query)
+            ).filter(search=search_query).order_by('-rank')
+        ```
+    - http://127.0.0.1:8000/blog/search/
+
+- Weighting queries
+    - dengan memberikan strata tertentu pada vector sehingga lebih powerful
+
+    - edit views.py
+        ```
+            
+            search_vector = SearchVector('title', weight='A') + \
+            SearchVector('body', weight='B')
+            search_query = SearchQuery(query)
+            results = Post.published.annotate(
+            rank=SearchRank(search_vector, search_query)
+            ).filter(rank__gte=0.3).order_by('-rank')
+            
+        ```
+- Searching with trigram similarity
+    - A trigram is a group of three consecutive characters. You can measure the similarity of two strings by counting the number of trigrams that they share. This approach turns out to be very effective for measuring the similarity of words in many languages.
+    - langkah menginstall trigram extension psql
+        - pip install wheel
+        - pip install django-contrib-postgres
+        - login root ke dtabase: psql -U postgres blog
+        - CREATE EXTENSION pg_trgrm
+    - views.py
+    ```
+    from django.contrib.postgres.search import TrigramSimilarity
+
+    ...
+    results = Post.published.annotate(
+        similarity=TrigramSimilarity('title', query),
+        ).filter(similarity__gt=0.1).order_by('-similarity')
+    ```
+
+
+
+- Other full-text search engines
+    - https://django-haystack.readthedocs.io/en/master/.
+
