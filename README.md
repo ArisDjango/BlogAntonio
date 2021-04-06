@@ -6,7 +6,7 @@
     - cd BlogAntonio
     - python -m venv venv
     - Set-ExecutionPolicy Unrestricted -Scope Process
-    - & d:/TUTORIAL/PYTHON/CrudEmployeeSimple/venv/Scripts/Activate.ps1
+    - & d:/TUTORIAL/PYTHON/BlogAntonio/venv/Scripts/Activate.ps1
 
 - Instalasi Django
     - python.exe -m pip install --upgrade pip
