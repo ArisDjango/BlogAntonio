@@ -1,3 +1,11 @@
+## summary
+- Template : html/js/css
+- Model : PostgreSQL
+- Views : Function based views
+- Form : Django form & ModelForm --> EmailPostForm & SearchForm (form), CommentForm (ModelForm)
+- Fitur : Tag, Comment, Total Post, Latest Post, Most Commented Post, Similiar post, Search, feed, sitemap(xml)
+- Problem: belum otentifikasi, Form belum handle image, send email by django belum berhasil
+- 
 ## Chapter 1: Building a Blog Application 1
 ### Instalasi Django dan Struktur App
 - Clone repo dan venv
