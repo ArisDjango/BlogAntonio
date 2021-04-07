@@ -62,7 +62,7 @@
             def __str__(self):
                 return self.title
     ```
-    ```
+    ```txt
         note:
         - CharField = VarChar SQL
         - slug = to build beautiful, SEO-friendly URLs
