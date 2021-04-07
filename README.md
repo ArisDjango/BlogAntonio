@@ -69,27 +69,75 @@
         - slug = to build beautiful, SEO-friendly URLs
         - author: 
             - This field defines a many-to-one relationship, meaning that each post is written by a user, and a user can write any number of posts.
+            - For this field, Django will create a foreign key in the database using the primary key of the related model.
+            - In this case, you are relying on the User model of the Django authentication system.
+            - on_delete parameter specifies the behavior to adopt when the referenced object is deleted.
+            - CASCADE, you specify that when the referenced user is deleted, the database will also delete all related blog
             - 
+            - You specify the name of the reverse relationship,from User to Post, with the related_name attribute. This will allow you to access related objects easily
+        - publish:
+            - This datetime indicates when the post was published.
+            - You use Django's timezone now method as the default value. This returns the current datetime in a timezone-aware format.
+            - You can think of it as a timezone-aware version of the standard Python datetime.now method.
+        - created: 
+            - This datetime indicates when the post was created.
+            - auto_now_add here --> the date will be saved automatically when creating an object.
+        - updated:
+            - This datetime indicates the last time the post was updated.
+            - auto_now here --> the date will be updated automatically when saving an object.
+        - status:
+        - This field shows the status of a post.
+        - choices parameter --> so the value of this field can only be set to one of the given choices.
+        
+        - Meta class :
+            - inside the model contains metadata
+            - You tell Django to sort results by the publish field in descending order (-) by default when you query the database.
+            - doing this, posts published recently will appear first.
+        - The __str__():
+            - is the default human-readable representation of the object.
+            - Django will use it in many places, such as the administration site.
+
+        
+    - Doc:
+    - djangoproject.com/en/3.0/ref/models/fields/#django.dbmodels.ForeignKey.on_delete.posts
+    - https://docs.djangoproject.com/en/3.0/ref/models/fields/
+
     '''
     ```
-    - python manage.py makemigrations blog
-    - python manage.py migrate
-- Run
+- registrasi 'blog.apps.BlogConfig', pada setting
+- python manage.py makemigrations blog
+    ```py
+    '''
+    Let's take a look at the SQL code on > migrations/0001_initial.py
+
+    python manage.py sqlmigrate blog 0001
+
+    - Django creates a primary key automatically for each model,
+    - but you can also override this by specifying primary_key=True in one of your model fields.
+    - primary key is an id column, which consists of an integer that is incremented automatically.
+    '''
     ```
+- python manage.py migrate
+
+
+
+- Run
+    ```py
     python manage.py runserver
     python manage.py runserver 127.0.0.1:8001 \--settings=mysite.settings
     ```
-    ```
+    ```py
+    '''
     Deploy setting hanya berlaku di development
     Deploy pada production di jalankan sebagai WSGI (Apache, Gunicorn), atau ASGI (Uvicorn, Daphne)
     https://docs.djangoproject.com/en/3.0/howto/deployment/wsgi/
-    ```
-    Note
+    
+    Note:
     - __init__.py: An empty file that tells Python to treat the mysite directory as a Python module.
     - wsgi.py: This is the configuration to run your project as a Web Server Gateway Interface (WSGI) application.
     - asgi.py: This is the configuration to run your project as ASGI, the emerging Python standard for asynchronous web servers and applications.
     ```
-### Menampilkan Admin panel
+### Creating an administration site for models
 - Membuat admin panel untuk models
     - registrasi models pada models.p
         - admin.py
