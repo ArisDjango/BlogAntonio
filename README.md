@@ -29,16 +29,70 @@
 - Membuat app 'blog'
     - python manage.py startapp blog
     - register di settings.py
-- Mendesain blog data model
-    - model.py
+
+### Mendesain blog data model
+    - blog/models.py
+
+    ```py
+    from django.db import models
+    from django.utils import timezone
+    from django.contrib.auth.models import User
+
+    class Post(models.Model):
+        STATUS_CHOICES = (
+            ('draft', 'Draft'),
+            ('published', 'Published'),
+        )
+
+        title = models.CharField(max_length=250)
+        slug = models.SlugField(max_length=250, unique_for_date='publish')
+        author = models.ForeignKey(User, on_delete=models.CASCADE,
+                                        related_name='blog_posts')
+        body = models.TextField()
+        publish = models.DateTimeField(default=timezone.now)
+        created = models.DateTimeField(auto_now_add=True)
+        updated = models.DateTimeField(auto_now=True)
+        status = models.CharField(max_length=10,
+                                choices=STATUS_CHOICES,
+                                default='draft')
+        
+        class Meta:
+            ordering = ('-publish',)
+
+        def __str__(self):
+            return self.title
+    ```
+    ```
+    note:
+    - CharField = VarChar SQL
+    - slug = to build beautiful, SEO-friendly URLs
+    - author: 
+        - This field defines a many-to-one relationship, meaning that each post is written by a user, and a user can write any number of posts.
+        - 
+    ```
     - python manage.py makemigrations blog
     - python manage.py migrate
+- Run
+    ```
+    python manage.py runserver
+    python manage.py runserver 127.0.0.1:8001 \--settings=mysite.settings
+    ```
+    ```
+    Deploy setting hanya berlaku di development
+    Deploy pada production di jalankan sebagai WSGI (Apache, Gunicorn), atau ASGI (Uvicorn, Daphne)
+    https://docs.djangoproject.com/en/3.0/howto/deployment/wsgi/
+    ```
+- Note
+    - __init__.py: An empty file that tells Python to treat the mysite directory as a Python module.
+    - wsgi.py: This is the configuration to run your project as a Web Server Gateway Interface (WSGI) application.
+    - asgi.py: This is the configuration to run your project as ASGI, the emerging Python standard for asynchronous web servers and applications.
 
 ### Menampilkan Admin panel
 - Membuat admin panel untuk models
     - registrasi models pada models.p
         - admin.py
-            ```
+
+            ```py
                 from .models import Post
 
                 admin.site.register(Post)
@@ -53,7 +107,7 @@
 
     - admin.py
 
-    ```
+    ```py
         @admin.register(Post)
         class PostAdmin(admin.ModelAdmin):
             list_display = ('title', 'slug', 'author', 'publish', 'status')
@@ -68,7 +122,8 @@
 - Create objects
     - Mencoba posting (melalui shell)
     - python manage.py shell
-    ```
+
+    ```py
         >>> from django.contrib.auth.models import User
         >>> from blog.models import Post
         >>> user = User.objects.get(username='admin')
@@ -209,7 +264,9 @@
     - Static
         - buat blog/static/clog.css
 - Adding pagination
+
     - views.py
+
     ```
         def post_list(request):
             object_list = Post.published.all()
