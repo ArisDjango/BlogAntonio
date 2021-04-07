@@ -62,16 +62,14 @@
             def __str__(self):
                 return self.title
     ```
-    ```txt
-        note:
+    - note:
         - CharField = VarChar SQL
         - slug = to build beautiful, SEO-friendly URLs
         - author: 
             - This field defines a many-to-one relationship, meaning that each post is written by a user, and a user can write any number of posts.
             - 
-    ```
-    - python manage.py makemigrations blog
-    - python manage.py migrate
+        - python manage.py makemigrations blog
+        - python manage.py migrate
 - Run
     ```
     python manage.py runserver
