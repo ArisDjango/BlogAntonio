@@ -31,9 +31,9 @@
     - register di settings.py
 
 ### Mendesain blog data model
-    - blog/models.py
+- blog/models.py
 
-        ```py
+    ```py
         from django.db import models
         from django.utils import timezone
         from django.contrib.auth.models import User
@@ -61,15 +61,15 @@
 
             def __str__(self):
                 return self.title
-        ```
-        ```
+    ```
+    ```
         note:
         - CharField = VarChar SQL
         - slug = to build beautiful, SEO-friendly URLs
         - author: 
             - This field defines a many-to-one relationship, meaning that each post is written by a user, and a user can write any number of posts.
             - 
-        ```
+    ```
     - python manage.py makemigrations blog
     - python manage.py migrate
 - Run
