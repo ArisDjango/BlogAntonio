@@ -62,6 +62,7 @@
             def __str__(self):
                 return self.title
     ```
+    ```py
     - note:
         - CharField = VarChar SQL
         - slug = to build beautiful, SEO-friendly URLs
@@ -70,6 +71,7 @@
             - 
         - python manage.py makemigrations blog
         - python manage.py migrate
+    ```
 - Run
     ```
     python manage.py runserver
