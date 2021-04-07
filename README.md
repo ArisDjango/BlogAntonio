@@ -33,43 +33,43 @@
 ### Mendesain blog data model
     - blog/models.py
 
-    ```py
-    from django.db import models
-    from django.utils import timezone
-    from django.contrib.auth.models import User
+        ```py
+        from django.db import models
+        from django.utils import timezone
+        from django.contrib.auth.models import User
 
-    class Post(models.Model):
-        STATUS_CHOICES = (
-            ('draft', 'Draft'),
-            ('published', 'Published'),
-        )
+        class Post(models.Model):
+            STATUS_CHOICES = (
+                ('draft', 'Draft'),
+                ('published', 'Published'),
+            )
 
-        title = models.CharField(max_length=250)
-        slug = models.SlugField(max_length=250, unique_for_date='publish')
-        author = models.ForeignKey(User, on_delete=models.CASCADE,
-                                        related_name='blog_posts')
-        body = models.TextField()
-        publish = models.DateTimeField(default=timezone.now)
-        created = models.DateTimeField(auto_now_add=True)
-        updated = models.DateTimeField(auto_now=True)
-        status = models.CharField(max_length=10,
-                                choices=STATUS_CHOICES,
-                                default='draft')
-        
-        class Meta:
-            ordering = ('-publish',)
+            title = models.CharField(max_length=250)
+            slug = models.SlugField(max_length=250, unique_for_date='publish')
+            author = models.ForeignKey(User, on_delete=models.CASCADE,
+                                            related_name='blog_posts')
+            body = models.TextField()
+            publish = models.DateTimeField(default=timezone.now)
+            created = models.DateTimeField(auto_now_add=True)
+            updated = models.DateTimeField(auto_now=True)
+            status = models.CharField(max_length=10,
+                                    choices=STATUS_CHOICES,
+                                    default='draft')
+            
+            class Meta:
+                ordering = ('-publish',)
 
-        def __str__(self):
-            return self.title
-    ```
-    ```
-    note:
-    - CharField = VarChar SQL
-    - slug = to build beautiful, SEO-friendly URLs
-    - author: 
-        - This field defines a many-to-one relationship, meaning that each post is written by a user, and a user can write any number of posts.
-        - 
-    ```
+            def __str__(self):
+                return self.title
+        ```
+        ```
+        note:
+        - CharField = VarChar SQL
+        - slug = to build beautiful, SEO-friendly URLs
+        - author: 
+            - This field defines a many-to-one relationship, meaning that each post is written by a user, and a user can write any number of posts.
+            - 
+        ```
     - python manage.py makemigrations blog
     - python manage.py migrate
 - Run
@@ -82,11 +82,11 @@
     Deploy pada production di jalankan sebagai WSGI (Apache, Gunicorn), atau ASGI (Uvicorn, Daphne)
     https://docs.djangoproject.com/en/3.0/howto/deployment/wsgi/
     ```
-- Note
+    Note
     - __init__.py: An empty file that tells Python to treat the mysite directory as a Python module.
     - wsgi.py: This is the configuration to run your project as a Web Server Gateway Interface (WSGI) application.
     - asgi.py: This is the configuration to run your project as ASGI, the emerging Python standard for asynchronous web servers and applications.
-
+    ```
 ### Menampilkan Admin panel
 - Membuat admin panel untuk models
     - registrasi models pada models.p
