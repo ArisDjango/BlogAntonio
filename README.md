@@ -259,9 +259,9 @@
 - Using exclude()
     - Kecuali
     - retrieve all posts published in 2020 whose titles don't start with Why
-    ```py
-        Post.objects.filter(publish__year=2020).exclude(title__startswith='Why')
-    ```
+        ```py
+            Post.objects.filter(publish__year=2020).exclude(title__startswith='Why')
+        ```
 - Using order_by()
     - order results by different fields, ex:
     - retrieve all objects ordered by their title
