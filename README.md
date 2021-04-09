@@ -236,18 +236,18 @@
     - filter by single fields. ex:
     - retrieve all posts published in the year 2020
         ```py
-            Post.objects.filter(publish__year=2021)
+        Post.objects.filter(publish__year=2021)
 
         ```
 
     - filter by multiple fields, ex:
     - retrieve all posts published in 2020 by the author with the username admin
         ```py
-            Post.objects.filter(publish__year=2021,author__username='admin')
+        Post.objects.filter(publish__year=2021,author__username='admin')
         ```
     - or
         ```py
-            Post.objects.filter(publish__year=2020).filter(author__username='admin')
+        Post.objects.filter(publish__year=2020).filter(author__username='admin')
         ```
     ```py
     '''
@@ -260,14 +260,14 @@
     - Kecuali
     - retrieve all posts published in 2020 whose titles don't start with Why
         ```py
-            Post.objects.filter(publish__year=2020).exclude(title__startswith='Why')
+        Post.objects.filter(publish__year=2020).exclude(title__startswith='Why')
         ```
 - Using order_by()
     - order results by different fields, ex:
     - retrieve all objects ordered by their title
         ```py
-            Post.objects.order_by('title') #Ascending
-            Post.objects.order_by('-title') #Descending
+        Post.objects.order_by('title') #Ascending
+        Post.objects.order_by('-title') #Descending
         ```
 - Deleting objects
     ```py
@@ -297,73 +297,111 @@
     - 'objects' adalah model manager default ketika membuat model
     - model manager bisa di custom
     - blog/models.py
-    ```py
+        ```py
         class PublishedManager(models.Manager):
             def get_queryset(self):
                 return super(PublishedManager, self)
                 .get_queryset()
                 .filter(status='published')
-  
+
         class Post(models.Model):
             # ...
             objects = models.Manager() # The default manager.
             published = PublishedManager() # Our custom manager.
-    ```
-    ```py
-    '''
-    NOTE:
-        - If no manager is defined in the model, Django automatically creates the objects
-        - If you declare any managers for your model but you want to keep the objects manager as well, you have to add it explicitly to your model.
-        - you add the default objects manager and the published custom manager to the Post model.
-    '''
-    ```
+
+        ```
+    
+        ```py
+        '''
+        NOTE:
+            - If no manager is defined in the model, Django automatically creates the objects
+            - If you declare any managers for your model but you want to keep the objects manager as well, you have to add it explicitly to your model.
+            - you add the default objects manager and the published custom manager to the Post model.
+
+        '''
+        ```
 ### views
 - Creating list and detail views ( Funtion Based View)
-    ```py
+    - blog/views.py
+        ```py
         from django.shortcuts import render, get_object_or_404
 
         def post_list(request):
             posts = Post.published.all()
             return render(request,'blog/post/list.html',{'posts': posts})
-
+        ```
+        ```py
+        '''
+        - post_list view takes the request object as the only parameter.
+        - This parameter is required by all views
+        - you retrieve all the posts with the published status using the published manager that you created previously
+        - render() --> shortcut provided by Django to render the list of posts
+        - It returns an HttpResponse object with the rendered text (normally HTML code) with the given template.
+        '''
+        ```
+        ```py
         def post_detail(request, year, month, day, post):
             post = get_object_or_404(Post, slug=post,
-                                    status='published',
-                                    publish__year=year,
-                                    publish__month=month,
-                                    publish__day=day)
+                                        status='published',
+                                        publish__year=year,
+                                        publish__month=month,
+                                        publish__day=day)
             return render(request,'blog/post/detail.html',{'post': post})
-    ```
+        ```
+        ```py
+        '''
+        NOTE:
+            - This view takes the year, month, day, and post arguments to retrieve a published post with the given slug and date
+            - Note that when you created the Post model, you added the 'unique_for_date' parameter to the slug field.
+            - This ensures that there will be only one post with a slug for a given date, and thus, you can retrieve single posts using the date and slug.
+            - get_object_or_404() shortcut to retrieve the desired. retrieves the object that matches the given parameters or an HTTP 404 (not found) exception if no object is found.
+        '''
+        
+        ```
 - Using class-based views
     - selain menggunakan FBV bisa juga menggunakan class based view
         - tambahkan pada views.py
-            ```
-                class PostListView(ListView):
-                    queryset = Post.published.all()
-                    context_object_name = 'posts'
-                    paginate_by = 3
-                    template_name = 'blog/post/list.html'
+            ```py
+            class PostListView(ListView):
+                queryset = Post.published.all()
+                context_object_name = 'posts'
+                paginate_by = 3
+                template_name = 'blog/post/list.html'
             ```
         - bypass blog/urls.py
-            ```
+            ```py
             path('', views.PostListView.as_view(), name='post_list'),
             ```
 ### urls
 - Adding URL patterns for your views
     - buat blog/urls.py
-        ```
-            from django.urls import path
-            from . import views
+        ```py
+        from django.urls import path
+        from . import views
             
-            app_name = 'blog'
+        app_name = 'blog'
 
-            urlpatterns = [
+        urlpatterns = [
             
-            path('', views.post_list, name='post_list'),
-            path('<int:year>/<int:month>/<int:day>/<slug:post>/',
+        path('', views.post_list, name='post_list'),
+        path('<int:year>/<int:month>/<int:day>/<slug:post>/',
                 views.post_detail,
                 name='post_detail'),
             ]
+        ```
+        ```py
+        '''
+        NOTE:
+            - you define an application namespace with the app_name variable. This allows you to organize URLs by application and use the name when
+            - You define two different patterns using the path() function
+            - first URL pattern doesn't take any arguments and is mapped to the post_list view.
+            - The second pattern takes the following four arguments and is mapped to the post_detail view: year,month, day --> integer, post --> Can be composed of words and hyphens
+            - path converter docs: https://docs.djangoproject.com/en/3.0/topics/http/urls/#pathconverters.
+
+            -If using path() and converters isn't sufficient for you, you can use re_path() instead to define complex URL patterns with Python regular expressions.
+            - Docs repath: https://docs.djangoproject.com/en/3.0/ref/urls/#django.urls.re_path.
+            - Regex howto : https://docs.python.org/3/howto/regex.html
+        '''
         ```
 - Canonical URLs for models
 
