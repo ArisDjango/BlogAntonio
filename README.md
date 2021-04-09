@@ -124,7 +124,7 @@
 - Run
     ```py
     python manage.py runserver
-    python manage.py runserver 127.0.0.1:8001 \--settings=mysite.settings
+    python manage.py runserver 127.0.0.1:8001 --settings=mysite.settings
     ```
     ```py
     '''
@@ -136,41 +136,49 @@
     - __init__.py: An empty file that tells Python to treat the mysite directory as a Python module.
     - wsgi.py: This is the configuration to run your project as a Web Server Gateway Interface (WSGI) application.
     - asgi.py: This is the configuration to run your project as ASGI, the emerging Python standard for asynchronous web servers and applications.
+    '''
     ```
 ### Creating an administration site for models
-- Membuat admin panel untuk models
-    - registrasi models pada models.p
-        - admin.py
+- Creating a superuser
+    - python manage.py createsuperuser
+    - http://127.0.0.1:8000/admin/
+- Customizing the way that models are displayed
+    - blog/admin.py
+        ```py
+        from django.contrib import admin
+        from .models import Post
 
-            ```py
-                from .models import Post
-
-                admin.site.register(Post)
-            ```
-    -  superuser
-        - python manage.py createsuperuser
-    - Admin panel siap
-        - python manage.py runserver
-        - http://127.0.0.1:8000/admin/
-    
-- Custom display di admin panel
-
-    - admin.py
-
-    ```py
-        @admin.register(Post)
+        admin.site.register(Post)
         class PostAdmin(admin.ModelAdmin):
-            list_display = ('title', 'slug', 'author', 'publish', 'status')
-            list_filter = ('status', 'created', 'publish', 'author')
-            search_fields = ('title', 'body')
-            prepopulated_fields = {'slug': ('title',)}
-            raw_id_fields = ('author',)
-            date_hierarchy = 'publish'
-            ordering = ('status', 'publish')
-    ```
-### Mencoba QuerySets
-- Create objects
-    - Mencoba posting (melalui shell)
+        list_display = ('title', 'slug', 'author', 'publish','status')
+        list_filter = ('status', 'created', 'publish', 'author')
+        search_fields = ('title', 'body')
+        prepopulated_fields = {'slug': ('title',)}
+        raw_id_fields = ('author',)
+        date_hierarchy = 'publish'
+        ordering = ('status', 'publish')
+        ```
+
+        ```py
+        '''
+        NOTE : 
+            - list_display --> the fields displayed
+            - list_filter --> filter fields on right sidebar
+            - search_fields --> search bar on the top of page
+            - prepopulated_fields --> grab title for slug
+            - raw_id_fields --> the author field is now displayed with a lookup widget that can scale much better than a drop-down select input when you have thousands of users
+            - date_hierarchy --> search bar, there are navigation links to navigate through a date hierarchy
+        '''
+        ```
+
+
+### Working with QuerySets and managers
+- ORM
+    - The Django ORM is based on QuerySets.
+    - A QuerySet is a collection of database queries to retrieve objects from your database
+    - https://docs.djangoproject.com/en/3.0/ref/models/
+- Creating objects
+    - Try via Django shell)
     - python manage.py shell
 
     ```py
@@ -183,38 +191,86 @@
         ... author=user)
         >>> post.save()
     ```
-- Update objects
+    ```py
+    '''
+    NOTE: 
+        - user = User.objects.get(username='admin') -->
+            - You retrieve the user object with the username admin
+            - retrieve a single object from the database
+            - this method expects a result that matches the query
+            - If no results are returned by the database, this method will raise a `DoesNotExist` exception
+            - if the database returns more than one result, it will raise a `MultipleObjectsReturned` exception
+            - Both exceptions are attributes of the model class that the query is being performed on.
+        - post.save()
+            - The preceding action performs an INSERT SQL statement behind the scenes
+            - You have seen how to create an object in memory first and then persist it to the database,
+    '''
+    
     ```
+- Update objects
+    ```py
         >>> post.title = 'New title'
         >>> post.save()
     ```
-- Retrieving objects (READ)
+    ```py
+    '''
+    NOTE:
+        - This time, the save() method performs an UPDATE SQL statement.
+        - The changes you make to the object are not persisted to the database until you call the save() method.
+    '''
     ```
+- Retrieving objects (READ)
+    ```py
         >>> all_posts = Post.objects.all()
         >>> all_posts
     ```
-- Menggunakan filter() method
+    ```py
+    '''
+    NOTE:
+        - objects --> the default manager. Each Django model has at least one manager and the default manager is called objects
+        - You get a QuerySet object using your model manager
+        - all() --> method on the default objects manager To retrieve all objects from a table
+    '''
     ```
+- Using the filter() method
+    - filter by single fields. ex:
+    - retrieve all posts published in the year 2020
+    ```py
         Post.objects.filter(publish__year=2021)
-        Post.objects.filter(publish__year=2021, author__username='admin')
+
     ```
-    - atau
+
+    - filter by multiple fields, ex:
+    - retrieve all posts published in 2020 by the author with the username admin
+    ```py
+        Post.objects.filter(publish__year=2021,author__username='admin')
     ```
-        Post.objects.filter(publish__year=2020) \
-            .filter(author__username='admin')
+    - or
+    ```py
+        Post.objects.filter(publish__year=2020).filter(author__username='admin')
     ```
-- Menggunakan exclude() --> ascending/descending
+    ```py
+    '''
+    NOTE:
+        - Queries with field lookup methods are built using two underscores, for example, publish__year
+        - but the same notation is also used for accessing fields of related models, such as author__username.
+    '''
     ```
-        Post.objects.filter(publish__year=2020) \
-        .exclude(title__startswith='Why')
+- Using exclude()
+    - Kecuali
+    - retrieve all posts published in 2020 whose titles don't start with Why
+    ```py
+        Post.objects.filter(publish__year=2020).exclude(title__startswith='Why')
     ```
 - Using order_by()
-    ```
-        Post.objects.order_by('title')
-        Post.objects.order_by('-title')
+    - order results by different fields, ex:
+    - retrieve all objects ordered by their title
+    ```py
+        Post.objects.order_by('title') //Ascending
+        Post.objects.order_by('-title') //Descending
     ```
 - Deleting objects
-    ```
+    ```py
         post = Post.objects.get(id=1)
         post.delete()
     ```
