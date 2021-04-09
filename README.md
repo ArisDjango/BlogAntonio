@@ -665,47 +665,48 @@
         - Form : standartd
         - ModelForm : forms dengan model instance
     - Buat blog/forms.py:
-    
-            ```py
 
-            from django import forms
+        ```py
+        from django import forms
 
-            class EmailPostForm(forms.Form):
-                name = forms.CharField(max_length=25)
-                email = forms.EmailField()
-                to = forms.EmailField()
-                comments = forms.CharField(required=False, widget=forms.Textarea)
-            ```
+        class EmailPostForm(forms.Form):
+            name = forms.CharField(max_length=25)
+            email = forms.EmailField()
+            to = forms.EmailField()
+            comments = forms.CharField(required=False, widget=forms.Textarea)  
+        ```
 - Handling forms in views
-    ```
-        def post_share(request, post_id):
-            # Mengambil post by id
-            post = get_object_or_404(Post, id=post_id, status='published')
-            if request.method == 'POST':
-            # Form ter submit
-                form = EmailPostForm(request.POST)
-                if form.is_valid():
-                # Form fields melalui validasi
-                    cd = form.cleaned_data
-                # ... mengirim email
-            else:
-                form = EmailPostForm()
-            return render(request, 'blog/post/share.html', {'post': post,'form': form})
+    ```py
+    def post_share(request, post_id):
+        # Mengambil post by id
+        post = get_object_or_404(Post, id=post_id, status='published')
+        if request.method == 'POST':
+        # Form ter submit
+            form = EmailPostForm(request.POST)
+            if form.is_valid():
+            # Form fields melalui validasi
+                cd = form.cleaned_data
+            # ... mengirim email
+        else:
+            form = EmailPostForm()
+        return render(request, 'blog/post/share.html', {'post': post,'form': form})
+        
     ```
 - Sending emails with Django
     - konfigurasi Simple Mail Transfer Protocol (SMTP) server
         - settings.py
         - untuk mencoba di django shell kita butuh setting backend console (setelah dipastikan fungsi email berjalan, bisa di nonaktifkan)
-        ```
-        EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-        ```
-        - SMTP server setting:
+
+            ```py
+            EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
             ```
-                EMAIL_HOST = 'smtp.gmail.com'
-                EMAIL_HOST_USER = 'winandiaris@gmail.com'
-                EMAIL_HOST_PASSWORD = 'xxxxxxxx'
-                EMAIL_PORT = 587
-                EMAIL_USE_TLS = True
+        - SMTP server setting:
+            ```py
+            EMAIL_HOST = 'smtp.gmail.com'
+            EMAIL_HOST_USER = 'winandiaris@gmail.com'
+            EMAIL_HOST_PASSWORD = 'xxxxxxxx'
+            EMAIL_PORT = 587
+            EMAIL_USE_TLS = True
             ```
         - Karena menggunakan gmail, Aktifkan 'Allow less secure apps'. ini akan mengijinkan teknologi dengan less secure bisa mengakses gmail.
         `https://myaccount.google.com/lesssecureapps`
@@ -713,51 +714,51 @@
         ` https://accounts.google.com/displayunlockcaptcha`
         - cek koneksi di console, simulasikan pengiriman email
         - python manage.py shell
-            ```
-                >>> from django.core.mail import send_mail
-                >>> send_mail('Django mail', 'This e-mail was sent with Django.', 'your_account@gmail.com', ['your_account@gmail.com'], fail_silently=False)
+            ```py
+            >>> from django.core.mail import send_mail
+            >>> send_mail('Django mail', 'This e-mail was sent with Django.', 'your_account@gmail.com', ['your_account@gmail.com'], fail_silently=False)
             ```
         - maka output =1 jika berhasil, selanjutnya:
         - Edit view.py, post_share(), menghandle email post
             - [view.py code](https://github.com/PacktPublishing/Django-3-by-Example/blob/master/Chapter02/mysite/blog/views.py)
         - tambahkan pada urls.py
-        ```
+            ```py
             urlpatterns = [
                 # ...
                 path('<int:post_id>/share/',
                 views.post_share, name='post_share'),
                 ]
-        ```
+            ```
 - Rendering forms in templates
     - buat file baru, templates/blog/post/share.html
-        ```
-            {% extends "blog/base.html" %}
-            {% block title %}Share a post{% endblock %}
+        ```py
+        {% extends "blog/base.html" %}
+        {% block title %}Share a post{% endblock %}
 
-            {% block content %}
-                {% if sent %}
-                    <h1>E-mail successfully sent</h1>
-                    <p>
-                        "{{ post.title }}" was successfully sent to {{ form.cleaned_data.to }}.
-                    </p>
-                {% else %}
-                    <h1>Share "{{ post.title }}" by e-mail</h1>
-                    <form method="post">
-                        {{ form.as_p }}
-                        {% csrf_token %}
-                        <input type="submit" value="Send e-mail">
-                    </form>
-                {% endif %}
-            {% endblock %}
+        {% block content %}
+            {% if sent %}
+                <h1>E-mail successfully sent</h1>
+                <p>
+                    "{{ post.title }}" was successfully sent to {{ form.cleaned_data.to }}.
+                </p>
+            {% else %}
+                <h1>Share "{{ post.title }}" by e-mail</h1>
+                <form method="post">
+                    {{ form.as_p }}
+                    {% csrf_token %}
+                    <input type="submit" value="Send e-mail">
+                </form>
+            {% endif %}
+        {% endblock %}
         ```
     - Edit the blog/post/detail.html
         - tempatkan code ini setelah `{{ post.body|linebreaks }}`
-            ```
-                <p>
-                    <a href="{% url "blog:post_share" post.id %}">
-                    Share this post
-                    </a>
-                </p>
+            ```html
+            <p>
+                <a href="{% url "blog:post_share" post.id %}">
+                Share this post
+                </a>
+            </p>
             ```
     - cek 127.0.0.1:8000/blog/
 ### Comment Form
@@ -768,7 +769,8 @@
     4. Edit post detail template untuk menampilkan daftar comments dan menampilkan form input comment
 - Building a model
     - buka models.py
-        ```
+        - code:
+            ```py
             class Comment(models.Model):
                 post = models.ForeignKey(Post,
                                         on_delete=models.CASCADE,
@@ -785,13 +787,14 @@
 
                 def __str__(self):
                     return f'Comment by {self.name} on {self.post}'
-        ```
+            ```
     - migrate
         - `python manage.py makemigrations blog`
         - `python manage.py migrate`
     - Menerapkan 'comment model' ke admin panel
     - admin.py
-        ```
+        - code:
+            ```py
             from .models import Post, Comment
 
             @admin.register(Comment)
@@ -799,11 +802,11 @@
                 list_display = ('name', 'email', 'post', 'created', 'active')
                 list_filter = ('active', 'created', 'updated')
                 search_fields = ('name', 'email', 'body')
-        ```
+            ```
     - cek 127.0.0.1:8000/admin
 - Creating forms from models
     - forms.py
-        ```
+        ```py
         from .models import Comment
 
         class CommentForm(forms.ModelForm):
@@ -813,7 +816,7 @@
         ```
 - Handling ModelForms in views
     - views.py pada post_detail()
-        ```
+        ```py
         from .models import Post, Comment
         from .forms import EmailPostForm, CommentForm
 
@@ -845,7 +848,7 @@
 - Adding comments to the post detail template
     - Menampilkan comments pada `post/detail.html`
         • Menampilkan total comments sebuah post
-        ```
+        ```html
         {% with comments.count as total_comments %}
             <h2>
                 {{ total_comments }} comment{{ total_comments|pluralize }}
@@ -853,7 +856,7 @@
         {% endwith %}
         ```
         • Menampilkan daftar comments
-        ```
+        ```html
         {% for comment in comments %}
             <div class="comment">
                 <p class="info">
@@ -868,7 +871,7 @@
 
         ```
         • Menampilkan form untuk users menginput comment baru
-        ```
+        ```html
         {% if new_comment %}
             <h2>Your comment has been added.</h2>
         {% else %}
@@ -887,7 +890,7 @@
     - pip install django_taggit
     - register pada settings.py --> `taggit`
     - models.py:
-        ```
+        ```py
         from taggit.managers import TaggableManager
 
             class Post(models.Model):
@@ -898,7 +901,7 @@
     - python manage.py migrate
     - coba fungsi tag melalui console
         - python manage.py shell
-        ```
+        ```py
         >>> from blog.models import Post
         >>> post = Post.objects.get(id=1)
         >>> post.tags.add('music', 'jazz', 'django')
@@ -911,7 +914,7 @@
         - blog/post/list.html, tempatkan dibawah post title
         `<p class="tags">Tags: {{ post.tags.all|join:", " }}</p>`
         - Views.py
-        ```
+            ```py
             from taggit.models import Tag
 
             def post_list(request, tag_slug=None):
@@ -923,9 +926,9 @@
                     object_list = object_list.filter(tags__in=[tag])
                 paginator = Paginator(object_list, 3) # 3 posts in each page
                 # ...
-        ```
+            ```
         - render()
-        ```
+        ```py
         return render(request, 'blog/post/list.html', {'page': page,
                                         'posts': posts,
                                         'tag': tag})
@@ -935,13 +938,13 @@
             - aktifkan kembali path post_list yang menggunakan FBV
                 - ` path('', views.post_list, name='post_list'),`
             - Tambahkan path tag
-                ```
+                ```py
                 path('tag/<slug:tag_slug>/', views.post_list name='post_list_by_tag'),
                 ```
         - Edit `blog/post/list.html`
             - rubah pagination ke FBV `{% include "pagination.html" with page=posts %}`
             - untuk filter tag dihalaman utama, tempatkan diatas %for%
-            ```
+            ```html
             <p class="tags">
             Tags:
             {% for tag in post.tags.all %}
@@ -963,7 +966,7 @@
         6. Batasi kueri ke jumlah posting yang ingin Anda rekomendasikan
     - Implementasi:
     - pada views.py - post_detail()
-        ```
+        ```py
         from django.db.models import Count
 
         # List of similar posts
@@ -979,7 +982,7 @@
         ```
 
     - Pada blog/post/detail.html, tempatkan sebelum post comment
-        ```
+        ```html
         <h2>Similar posts</h2>
         {% for post in similar_posts %}
             <p>
