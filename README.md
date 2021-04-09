@@ -848,42 +848,44 @@
 - Adding comments to the post detail template
     - Menampilkan comments pada `post/detail.html`
         • Menampilkan total comments sebuah post
-        ```html
-        {% with comments.count as total_comments %}
-            <h2>
-                {{ total_comments }} comment{{ total_comments|pluralize }}
-            </h2>
-        {% endwith %}
-        ```
-        • Menampilkan daftar comments
-        ```html
-        {% for comment in comments %}
-            <div class="comment">
-                <p class="info">
-                    Comment {{ forloop.counter }} by {{ comment.name }}
-                    {{ comment.created }}
-                </p>
-                {{ comment.body|linebreaks }}
-            </div>
-        {% empty %}
-            <p>There are no comments yet.</p>
-        {% endfor %}
 
-        ```
+            ```html
+            {% with comments.count as total_comments %}
+                <h2>
+                    {{ total_comments }} comment{{ total_comments|pluralize }}
+                </h2>
+            {% endwith %}
+            ```
+        • Menampilkan daftar comments
+            ```html
+            {% for comment in comments %}
+                <div class="comment">
+                    <p class="info">
+                        Comment {{ forloop.counter }} by {{ comment.name }}
+                        {{ comment.created }}
+                    </p>
+                    {{ comment.body|linebreaks }}
+                </div>
+            {% empty %}
+                <p>There are no comments yet.</p>
+            {% endfor %}
+
+            ```
         • Menampilkan form untuk users menginput comment baru
-        ```html
-        {% if new_comment %}
-            <h2>Your comment has been added.</h2>
-        {% else %}
-            <h2>Add a new comment</h2>
-            <form method="post">
-                {{ comment_form.as_p }}
-                {% csrf_token %}
-                <p><input type="submit" value="Add comment"></p>
-            </form>
-        {% endif %}
-        
-        ```
+
+            ```html
+            {% if new_comment %}
+                <h2>Your comment has been added.</h2>
+            {% else %}
+                <h2>Add a new comment</h2>
+                <form method="post">
+                    {{ comment_form.as_p }}
+                    {% csrf_token %}
+                    <p><input type="submit" value="Add comment"></p>
+                </form>
+            {% endif %}
+            
+            ```
     - cek tampilan form comment http://127.0.0.1:8000/blog/
 ### Tag
 - Adding the tagging functionality
@@ -901,13 +903,13 @@
     - python manage.py migrate
     - coba fungsi tag melalui console
         - python manage.py shell
-        ```py
-        >>> from blog.models import Post
-        >>> post = Post.objects.get(id=1)
-        >>> post.tags.add('music', 'jazz', 'django')
-        >>> post.tags.all()
-        <QuerySet [<Tag: jazz>, <Tag: django>, <Tag: music>]>
-        ```
+            ```py
+            >>> from blog.models import Post
+            >>> post = Post.objects.get(id=1)
+            >>> post.tags.add('music', 'jazz', 'django')
+            >>> post.tags.all()
+            <QuerySet [<Tag: jazz>, <Tag: django>, <Tag: music>]>
+            ```
     - http://127.0.0.1:8000/admin/taggit/tag/
     - pada admin, Buka post/form edit, akan muncul form tag, yang bisa diinput lebih dari 1 dengan separasi coma
     - Menampilkan tag pada post
@@ -944,17 +946,17 @@
         - Edit `blog/post/list.html`
             - rubah pagination ke FBV `{% include "pagination.html" with page=posts %}`
             - untuk filter tag dihalaman utama, tempatkan diatas %for%
-            ```html
-            <p class="tags">
-            Tags:
-            {% for tag in post.tags.all %}
-                <a href="{% url "blog:post_list_by_tag" tag.slug %}">
-                    {{ tag.name }}
-                </a>
-                {% if not forloop.last %}, {% endif %}
-            {% endfor %}
-            </p>
-            ```
+                ```html
+                <p class="tags">
+                Tags:
+                {% for tag in post.tags.all %}
+                    <a href="{% url "blog:post_list_by_tag" tag.slug %}">
+                        {{ tag.name }}
+                    </a>
+                    {% if not forloop.last %}, {% endif %}
+                {% endfor %}
+                </p>
+                ```
 
 - Retrieving posts by similarity
     - Untuk mendapatkan saran post yang mirip ,berikut tahapannya:
@@ -1003,42 +1005,40 @@
 
 - Custom template tags
     - ada 2 macam:
-        • simple_tag: memproses data dan mereturn string
-        • inclusion_tag: memproses data dan mereturn render template
-
-
+        - simple_tag: memproses data dan mereturn string
+        - inclusion_tag: memproses data dan mereturn render template
     - Buat directory blog/templatetags
     - buat file kosong __init__.py
 - Total Post
     - buat file blog_tags.py
-        ```
-            from django import template
-            from ..models import Post
+        ```py
+        from django import template
+        from ..models import Post
 
-            register = template.Library()
+        register = template.Library()
 
-            @register.simple_tag
-            def total_posts():
-                return Post.published.count()
+        @register.simple_tag
+        def total_posts():
+            return Post.published.count()
         ```
     - blog/templates/base.html
-        ```
-            {% load blog_tags %}
-            ...
-            <h2>My blog</h2>
-                <p>This is my blog. I've written {% total_posts %} posts so far.</p>
+        ```py
+        {% load blog_tags %}
+        ...
+        <h2>My blog</h2>
+            <p>This is my blog. I've written {% total_posts %} posts so far.</p>
         ```
         - Maka dibawah Blog title akan muncul jumlah total posts
 - Latest Post
     - Pada file blog_tags.py, tambahkan:
-        ```
+        ```py
         @register.inclusion_tag('blog/post/latest_posts.html')
         def show_latest_posts(count=5):
             latest_posts = Post.published.order_by('-publish')[:count]
             return {'latest_posts': latest_posts}
         ```
     - Buat Template baru blog/post/latest_posts.html:
-        ```
+        ```html
         <ul>
             {% for post in latest_posts %}
             <li>
@@ -1048,7 +1048,7 @@
         </ul>
         ```
     - Edit blog/base.html
-        ```
+        ```html
         ...
         <p>This is my blog. I've written {% total_posts %} posts so far.</p>
                 <h3>Latest posts</h3>
@@ -1057,7 +1057,7 @@
         - Maka akan muncul latest post pada side bar
 - Most Commented
     - Edit blog_tags.py
-        ```
+        ```py
             from django.db.models import Count
             
             @register.simple_tag
@@ -1066,17 +1066,17 @@
                 ).order_by('-total_comments')[:count]
         ```
     - Edit base.html
-    ```
-    <h3>Most commented posts</h3>
-            {% get_most_commented_posts as most_commented_posts %}
-            <ul>
-                {% for post in most_commented_posts %}
-                <li>
-                    <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
-                </li>
-                {% endfor %}
-            </ul>
-    ```
+        ```html
+        <h3>Most commented posts</h3>
+                {% get_most_commented_posts as most_commented_posts %}
+                <ul>
+                    {% for post in most_commented_posts %}
+                    <li>
+                        <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+        ```
     - Maka pada side bar akan muncul Most commented posts
     
 - Custom template filters
@@ -1089,7 +1089,7 @@
     -
     - Install markdown --> `pip install markdown`
     - edit blog_tags.py
-        ```
+        ```py
         from django.utils.safestring import mark_safe
         import markdown
 
@@ -1110,7 +1110,7 @@
 - Adding a sitemap to your site
     - doc : https://docs.djangoproject.com/en/3.0/ref/contrib/sitemaps/
     - settings.py
-        ```
+        ```py
         SITE_ID = 1
 
         # Application definition
@@ -1120,10 +1120,10 @@
         'django.contrib.sitemaps',
         ]
         ```
-        python manage.py migrate
+    - python manage.py migrate
 
     - Buat baru blog/sitemaps.py
-        ```
+        ```py
         from django.contrib.sitemaps import Sitemap
         from .models import Post
 
@@ -1137,7 +1137,7 @@
                 return obj.updated
         ```
     - BUka core/urls.py
-        ```
+        ```py
         from django.urls import path, include
         from django.contrib import admin
         from django.contrib.sitemaps.views import sitemap
@@ -1163,24 +1163,25 @@
     - ref:  Django syndication feed framework at https://docs.djangoproject.com/en/3.0/ref/contrib/syndication/
     - secara dinamis akan mengenerate RSS atau atom feed. web feed data format(biasanya XML) memungkinkan user mendapatkan update feed menggunakan feed agragator.
     - buat file baru, blog/feeds.py
-        ```
+        ```py
         from django.contrib.syndication.views import Feed
         from django.template.defaultfilters import truncatewords
         from django.urls import reverse_lazy
         from .models import Post
+
         class LatestPostsFeed(Feed):
-        title = 'My blog'
-        link = reverse_lazy('blog:post_list')
-        description = 'New posts of my blog.'
-        def items(self):
-        return Post.published.all()[:5]
-        def item_title(self, item):
-        return item.title
-        def item_description(self, item):
-        return truncatewords(item.body, 30)
+            title = 'My blog'
+            link = reverse_lazy('blog:post_list')
+            description = 'New posts of my blog.'
+            def items(self):
+            return Post.published.all()[:5]
+            def item_title(self, item):
+            return item.title
+            def item_description(self, item):
+            return truncatewords(item.body, 30)
         ```
     - tambahkan pada blog/urls.py
-        ```
+        ```py
         from .feeds import LatestPostsFeed
 
         urlpatterns = [
@@ -1190,7 +1191,7 @@
         ```
     - buka http://127.0.0.1:8000/blog/feed/, maka akan melihat format xml
     - buka blog/base.html, tempatkan pada side bar, dibawah total post
-        ```
+        ```html
         <p>
         <a href="{% url "blog:post_feed" %}">Subscribe to my RSS feed</a>
         </p>
@@ -1200,8 +1201,9 @@
 ### Search
 - Adding full-text search to your blog
     - pencarian dalam blog bisa menggunakan cara filter ORM, misal
-        ```
+        ```py
         from blog.models import Post
+
         Post.objects.filter(body__contains='framework')
         ```
     - Untuk pencarian secara kompleks, bisa menggunakan fitur dari postgreSQL dan modul `django.contrib.postgres`
@@ -1211,7 +1213,7 @@
     - https://www.postgresql.org/download/
     - pip install psycopg2-binary
     - Buat user & password baru, dan memberi hak akses 
-        ```
+        ```sql
         psql -U postgres
         CREATE USER aris;
         ALTER USER aris PASSWORD 'aris1985';
@@ -1222,29 +1224,29 @@
         createdb -U aris blog;
         ```
     - settings.py
-    ```
-    DATABASES = {
-        'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'blog',
-        'USER': 'blog',
-        'PASSWORD': '*****',
-        }
-    ```
+        ```py
+        DATABASES = {
+            'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'blog',
+            'USER': 'blog',
+            'PASSWORD': '*****',
+            }
+        ```
     - python manage.py migrate
     - python manage.py createsuperuser
     - http://127.0.0.1:8000/admin/
     - karena ganti database postgres, semua post lama hilang. sekarang buat post baru agar search fitur bisa di terapkan
 - Simple search lookups
     - Sekarang bisa melakukan search single field, contoh:
-        ```
+        ```py
         from blog.models import Post
         Post.objects.filter(body__search='django')
         ```
 - Searching against multiple fields
     - search multiple fields, memungkinkan  search terhadap title dan body dari Post model
     - contoh :
-        ```
+        ```py
         from django.contrib.postgres.search import SearchVector
         from blog.models import Post
 
@@ -1256,12 +1258,12 @@
     - for views.py docs: https://docs.djangoproject.com/en/3.1/ref/contrib/postgres/search/
     - Membuat view untuk search post
     - edit forms.py
-        ```
+        ```py
         class SearchForm(forms.Form):
             query = forms.CharField()
         ```
     - edit views.py
-        ```
+        ```py
         from django.contrib.postgres.search import SearchVector
         from .forms import EmailPostForm, CommentForm, SearchForm
 
@@ -1283,7 +1285,7 @@
 
         ```
     - Buat blog/post/search.html
-        ```
+        ```html
         {% extends "blog/base.html" %}
         {% load blog_tags %}
 
@@ -1320,7 +1322,7 @@
 - Stemming and ranking results
     - proses  kalimat hasil search menjadi kalimat dasar, dan sorting berdasarkan seberapa sering post tampil
     - edit views.py
-        ```
+        ```py
         from django.contrib.postgres.search import SearchVector, SearchQuery,
         SearchRank
 
@@ -1339,12 +1341,12 @@
     - dengan memberikan strata tertentu pada vector sehingga lebih powerful
 
     - edit views.py
-        ```
+        ```py
             
-            search_vector = SearchVector('title', weight='A') + \
-            SearchVector('body', weight='B')
-            search_query = SearchQuery(query)
-            results = Post.published.annotate(
+        search_vector = SearchVector('title', weight='A') + \
+        SearchVector('body', weight='B')
+        search_query = SearchQuery(query)
+        results = Post.published.annotate(
             rank=SearchRank(search_vector, search_query)
             ).filter(rank__gte=0.3).order_by('-rank')
             
@@ -1357,14 +1359,14 @@
         - login root ke dtabase: psql -U postgres blog
         - CREATE EXTENSION pg_trgrm
     - views.py
-    ```
-    from django.contrib.postgres.search import TrigramSimilarity
+        ```py
+        from django.contrib.postgres.search import TrigramSimilarity
 
-    ...
-    results = Post.published.annotate(
-        similarity=TrigramSimilarity('title', query),
-        ).filter(similarity__gt=0.1).order_by('-similarity')
-    ```
+        ...
+        results = Post.published.annotate(
+            similarity=TrigramSimilarity('title', query),
+            ).filter(similarity__gt=0.1).order_by('-similarity')
+        ```
 
 
 
