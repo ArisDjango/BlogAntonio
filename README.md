@@ -265,14 +265,14 @@
 - Using order_by()
     - order results by different fields, ex:
     - retrieve all objects ordered by their title
-    ```py
-        Post.objects.order_by('title') #Ascending
-        Post.objects.order_by('-title') #Descending
-    ```
+        ```py
+            Post.objects.order_by('title') #Ascending
+            Post.objects.order_by('-title') #Descending
+        ```
 - Deleting objects
     ```py
-        post = Post.objects.get(id=1)
-        post.delete()
+    post = Post.objects.get(id=1)
+    post.delete()
     ```
     ```py
     '''
