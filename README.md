@@ -235,20 +235,20 @@
 - Using the filter() method
     - filter by single fields. ex:
     - retrieve all posts published in the year 2020
-    ```py
-        Post.objects.filter(publish__year=2021)
+        ```py
+            Post.objects.filter(publish__year=2021)
 
-    ```
+        ```
 
     - filter by multiple fields, ex:
     - retrieve all posts published in 2020 by the author with the username admin
-    ```py
-        Post.objects.filter(publish__year=2021,author__username='admin')
-    ```
+        ```py
+            Post.objects.filter(publish__year=2021,author__username='admin')
+        ```
     - or
-    ```py
-        Post.objects.filter(publish__year=2020).filter(author__username='admin')
-    ```
+        ```py
+            Post.objects.filter(publish__year=2020).filter(author__username='admin')
+        ```
     ```py
     '''
     NOTE:
