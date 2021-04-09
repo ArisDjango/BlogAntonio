@@ -172,7 +172,7 @@
         ```
 
 
-### Working with QuerySets and managers
+### QuerySets and managers
 - ORM
     - The Django ORM is based on QuerySets.
     - A QuerySet is a collection of database queries to retrieve objects from your database
@@ -266,16 +266,23 @@
     - order results by different fields, ex:
     - retrieve all objects ordered by their title
     ```py
-        Post.objects.order_by('title') //Ascending
-        Post.objects.order_by('-title') //Descending
+        Post.objects.order_by('title') #Ascending
+        Post.objects.order_by('-title') #Descending
     ```
 - Deleting objects
     ```py
         post = Post.objects.get(id=1)
         post.delete()
     ```
-- When QuerySets are evaluated
+    ```py
+    '''
+    NOTE:
+    deleting objects will also delete any dependent relationships for ForeignKey objects defined with on_delete set to CASCADE.
+    '''
     ```
+- When QuerySets are evaluated
+    ```py
+    '''
         QuerySets are only evaluated in the following cases:
         • The first time you iterate over them
         • When you slice them, for instance, Post.objects.all()[:3]
@@ -283,25 +290,36 @@
         • When you call repr() or len() on them
         • When you explicitly call list() on them
         • When you test them in a statement, such as bool(), or, and, or if
+    '''
     ```
 ### Model Managers
 - Creating model managers
     - 'objects' adalah model manager default ketika membuat model
     - model manager bisa di custom
-    ```
+    - blog/models.py
+    ```py
         class PublishedManager(models.Manager):
             def get_queryset(self):
-                return super().get_queryset().filter(status='published')
-    ```
-    ```
+                return super(PublishedManager, self)
+                .get_queryset()
+                .filter(status='published')
+  
         class Post(models.Model):
             # ...
             objects = models.Manager() # The default manager.
             published = PublishedManager() # Our custom manager.
     ```
+    ```py
+    '''
+    NOTE:
+        - If no manager is defined in the model, Django automatically creates the objects
+        - If you declare any managers for your model but you want to keep the objects manager as well, you have to add it explicitly to your model.
+        - you add the default objects manager and the published custom manager to the Post model.
+    '''
+    ```
 ### views
 - Creating list and detail views ( Funtion Based View)
-    ```
+    ```py
         from django.shortcuts import render, get_object_or_404
 
         def post_list(request):
