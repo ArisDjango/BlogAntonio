@@ -30,7 +30,7 @@
     - python manage.py startapp blog
     - register di settings.py
 
-### Mendesain blog data model
+### Models
 - blog/models.py
 
     ```py
@@ -403,33 +403,158 @@
             - Regex howto : https://docs.python.org/3/howto/regex.html
         '''
         ```
-- Canonical URLs for models
+- Adding URL patterns to project project
+    - core/urls.py
+        ```py
+        from django.urls import path, include
+        from django.contrib import admin
 
-    ```
-    def get_absolute_url(self):
-        return reverse('blog:post_detail',
-                       args=[self.publish.year,
-                             self.publish.month,
-                             self.publish.day, self.slug])
-    ```
+        urlpatterns = [
+        path('admin/', admin.site.urls),
+        path('blog/', include('blog.urls', namespace='blog')),
+        ]
+        ```
+        ```py
+        '''
+        NOTE:
+        - You include these patterns under the namespace blog
+        - Later, you will refer to your blog URLs easily by using the namespace followed by a colon and the URL name, for example, blog:post_list and blog:post_detail.
+        - DOCs = https://docs.djangoproject.com/en/3.0/topics/http/urls/#url-namespaces.
+        '''
+        ```
+- Canonical URLs for models
+    - Edit blog/models.py
+        ```py
+        def get_absolute_url(self):
+            return reverse('blog:post_detail',
+                        args=[self.publish.year,
+                                self.publish.month,
+                                self.publish.day, self.slug])
+        ```
+        ```py
+        '''
+        NOTE:
+        - You may have different pages in your site where you display posts, but there is a single URL that you use as the main URL for a blog post.
+        - The convention in Django is to add a get_absolute_url() method to the model that returns the canonical URL for the object.
+        - You can use the post_detail URL that you have defined in the preceding section to build the canonical URL for Post objects.
+        - For this method, you will use the reverse() method, which allows you to build URLs by their name and pass optional parameters.
+        - Docs: https://docs.djangoproject.com/en/3.0/ref/urlresolvers/
+        '''
+        ```
 ### template
 - Creating templates for your views
-    - blog:
-        ```
+- Docs :
+    - https://docs.djangoproject.com/en/3.0/ref/templates/language/
+    - https://docs.djangoproject.com/en/3.0/ref/templates/builtins/
+
+        - blog, create directory structure:
+            ```
             templates/
                 blog/
                     base.html
                     post/
                         list.html
                         detail.html
-    ```
-    - Static
-        - buat blog/static/clog.css
+            ```
+            ```py
+            '''
+            NOTE:
+            - Template tags control the rendering of the template and look like {% tag %}
+            - Template variables get replaced with values when the template is rendered and look like {{ variable }}
+            - Template filters allow you to modify variables for display and look like {{variable|filter }}
+            '''
+            ```
+        - Static
+            - buat blog/static/blog.css
+        - Edit the base.html
+            ```html
+            {% load static %}
+            <!DOCTYPE html>
+            <html>
+                <head>
+                <title>{% block title %}{% endblock %}</title>
+                    <link href="{% static "css/blog.css" %}" rel="stylesheet">
+                </head>
+                <body>
+                    <div id="content">
+                        {% block content %}
+                        {% endblock %}
+                    </div>
+                    <div id="sidebar">
+                        <h2>My blog</h2>
+                        <p>This is my blog.</p>
+                    </div>
+                </body>
+            </html>
+
+            ```
+            ```py
+            '''
+            NOTE:
+            - {% load static %} tells Django to load the static template tags that are provided by the django.contrib.staticfiles application, which is contained in the INSTALLED_APPS setting.
+            - After loading them, you are able to use the {% static %} template tag throughout this template.
+            - With this template tag, you can include the static files, such as the blog.css file, which you will find in the code of this example under the static/ directory of the blog application.
+            '''
+            ```
+        - post/list.html
+            ```html
+            {% extends "blog/base.html" %}
+            {% block title %}My Blog{% endblock %}
+            {% block content %}
+
+            <h1>My Blog</h1>
+            {% for post in posts %}
+            <h2>
+                <a href="{{ post.get_absolute_url }}">
+                    {{ post.title }}
+                </a>
+            </h2>
+            <p class="date">
+            Published {{ post.publish }} by {{ post.author }}
+            </p>
+            {{ post.body|truncatewords:30|linebreaks }}
+            {% endfor %}
+            {% endblock %}
+            ```
+            ```py
+            '''
+            NOTE:
+            - With the {% extends %} template tag, you tell Django to inherit from the blog/base.html template.
+            - Then, you fill the title and content blocks of the base template with content. You iterate through the posts and display their title, date, author, and body, including a link in the title to the canonical URL of the post.
+            - you apply two template filters: truncatewords truncates the value to the number of words specified,
+            - linebreaks converts the output into HTML line breaks.
+            - You can concatenate as many template filters as you wish; each one will be applied to the output generated by the preceding one.
+            '''
+            ```
+    - Run test
+        - python manage.py runserver
+        - http://127.0.0.1:8000/blog/
+    - post/detail.html
+        ```html
+        {% extends "blog/base.html" %}
+        {% block title %}{{ post.title }}{% endblock %}
+
+        {% block content %}
+
+        <h1>{{ post.title }}</h1>
+        <p class="date">
+            Published {{ post.publish }} by {{ post.author }}
+        </p>
+            {{ post.body|linebreaks }}
+        {% endblock %}
+        ```
+        ```py
+        '''
+        - Take a look at the URL—it should be `/blog/2020/1/1/who-was-djangoreinhardt/`
+        - You have designed SEO-friendly URLs for your blog posts.
+
+        '''
+        ```
+
 - Adding pagination
+    - blog/views.py
 
-    - views.py
-
-    ```
+        ```py
         def post_list(request):
             object_list = Post.published.all()
             paginator = Paginator(object_list, 3) # 3 posts in each page
@@ -444,9 +569,15 @@
                 posts = paginator.page(paginator.num_pages)
             return render(request,'blog/post/list.html',
                             {'page': page,'posts': posts})
-    ```
-    - buat blog/templates/pagination.html
         ```
+        ```py
+        '''
+        NOTE:
+        
+        '''
+        ```
+    - buat blog/templates/pagination.html
+        ```html
             <div class="pagination">
                 <span class="step-links">
                 {% if page.has_previous %}
@@ -461,11 +592,67 @@
                 </span>
             </div>
         ```
-    - buka blog/post/list.html, tempatkan tag pagination dibawah {content}  
-    `{% include "pagination.html" with page=posts %}`
+        ```py
+        '''
+        NOTE:
+
+        '''
+        ```
+    - return to the blog/post/list.html
+        ```html
+        {% block content %}
+        ...
+        {% include "pagination.html" with page=posts %}
+        {% endblock %}
+        ```
+        ```py
+        '''
+        NOTE:
+            - Since the Page object you are passing to the template is called posts, you include the pagination template in the post list template, passing the parameters to render it correctly.
+            - You can follow this method to reuse your pagination template in the paginated views of different models.
+        '''
+        ``` 
     - tes http://127.0.0.1:8000/blog/
 
-    
+- Class Based Views version
+    - Docs:https://docs.djangoproject.com/en/3.0/topics/class-based-views/intro/
+    - Edit the blog/views.py
+        ```py
+        from django.views.generic import ListView
+
+        class PostListView(ListView):
+            queryset = Post.published.all()
+            context_object_name = 'posts'
+            paginate_by = 3
+            template_name = 'blog/post/list.html'
+        ```
+        ```py
+        '''
+        - Use a specific QuerySet instead of retrieving all objects.
+        - Instead of defining a queryset attribute, you could have specified model = Post and Django would have built the generic Post.objects.all() QuerySet for you.
+        - Use the context variable posts for the query results. The default variable is object_list if you don't specify any context_object_name.
+        - Paginate the result, displaying three objects per page.
+        - Use a custom template to render the page. If you don't set a default template, ListView will use blog/post_list.html.
+        '''
+        ```
+    - blog/urls.py
+        ```py
+        urlpatterns = [
+            # post views
+            # path('', views.post_list, name='post_list'),
+            path('', views.PostListView.as_view(), name='post_list'),
+            path('<int:year>/<int:month>/<int:day>/<slug:post>/',
+            views.post_detail,
+            name='post_detail'),
+            ]
+        ```
+    - edit your post/list.html template
+        ```py
+        {% include "pagination.html" with page=page_obj %}
+        # Django's ListView generic view passes the selected page in a variable called page_obj
+        ```
+    - Tes http://127.0.0.1:8000/blog/
+
 ## Chapter 2: Enhancing Your Blog with Advanced Features
 ### Sharing posts by email
 - Algoritma pengiriman email
@@ -478,7 +665,9 @@
         - Form : standartd
         - ModelForm : forms dengan model instance
     - Buat blog/forms.py:
-        ```
+    
+            ```py
+
             from django import forms
 
             class EmailPostForm(forms.Form):
@@ -486,7 +675,7 @@
                 email = forms.EmailField()
                 to = forms.EmailField()
                 comments = forms.CharField(required=False, widget=forms.Textarea)
-        ```
+            ```
 - Handling forms in views
     ```
         def post_share(request, post_id):
