@@ -1,0 +1,47 @@
+version: '3'
+
+services:
+    blogantonio:
+        build: .
+        volumes:
+        - .:/opt/services/blogantonio/src
+        - static_volume_blog:/opt/services/blogantonio/static
+        - media_volume_blog:/opt/services/blogantonio/media
+        networks:
+        - nginx_network_blog
+        - database_network_blog
+        depends_on:
+            - database_blog
+    
+    nginx:
+        image: nginx
+        ports:
+            - 8002:80
+        volumes:
+        - ./config/nginx/conf.d:/etc/nginx/conf.d
+        - static_volume_blog:/opt/services/blogantonio/static  # <-- bind the static volume
+        - media_volume_blog:/opt/services/blogantonio/media  # <-- bind the media volume
+        depends_on:
+        - blogantonio
+        networks:
+        - nginx_network_blog
+
+    database_blog:
+        image: postgres
+        env_file:
+        - config/db/database1_env
+        networks:
+        - database_network_blog
+        volumes:
+        - database1_volume_blog:/var/lib/postgresql/data
+
+networks:
+    nginx_network_blog:
+        driver: bridge
+    database_network_blog:
+        driver: bridge
+    
+volumes:
+    database1_volume_blog:
+    static_volume_blog:
+    media_volume_blog:

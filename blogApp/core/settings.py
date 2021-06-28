@@ -25,7 +25,7 @@ SECRET_KEY = 'gnpt-5^b+g2e&9oh*o7@20l6z0i)!a%jivzt03*dfo1rfj(0v4'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['54.169.192.203']
 
 SITE_ID = 1
 # Application definition
@@ -82,10 +82,12 @@ DATABASES = {
     'default': {
         # 'ENGINE': 'django.db.backends.sqlite3',
         # 'NAME': BASE_DIR / 'db.sqlite3',
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'blog',
         'USER': 'aris',
         'PASSWORD': 'aris1985',
+        'HOST': 'database_blog',  # <-- IMPORTANT: same name as docker-compose service!
+        'PORT': '5432',
 
 
     }
