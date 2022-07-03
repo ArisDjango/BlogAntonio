@@ -26,7 +26,7 @@ SECRET_KEY = 'gnpt-5^b+g2e&9oh*o7@20l6z0i)!a%jivzt03*dfo1rfj(0v4'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['167.172.70.208']
+ALLOWED_HOSTS = ['167.172.70.208','127.0.0.1','localhost']
 
 SITE_ID = 1
 # Application definition
@@ -87,7 +87,7 @@ DATABASES = {
         'NAME': 'blog',
         'USER': 'aris',
         'PASSWORD': 'aris1985',
-        'HOST': 'database_blog',  # <-- IMPORTANT: same name as docker-compose service!
+        # 'HOST': 'database_blog',  # <-- IMPORTANT: same name as docker-compose service!
         'PORT': '5432',
 
 
