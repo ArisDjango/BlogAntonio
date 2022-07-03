@@ -26,7 +26,7 @@ SECRET_KEY = 'gnpt-5^b+g2e&9oh*o7@20l6z0i)!a%jivzt03*dfo1rfj(0v4'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['54.169.192.203']
+ALLOWED_HOSTS = ['167.172.70.208']
 
 SITE_ID = 1
 # Application definition
