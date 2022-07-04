@@ -1,3 +1,12 @@
+<details>
+<summary>Instalasi clone</summary>
+- local
+    - git clone xxxx
+    - fsdfsd
+</details>
+<details>
+<summary>DOCS</summary>
+
 ## fsdfsd
 - deploy docker
 ## summary
@@ -1375,3 +1384,4 @@
 - Other full-text search engines
     - https://django-haystack.readthedocs.io/en/master/.
 
+</details>
