@@ -1,8 +1,34 @@
 <details>
 <summary>Instalasi clone</summary>
+
 - local
     - git clone xxxx
-    - fsdfsd
+    - `pipenv shell` (jika tidak bisa, activate manual di . /home/aris/.local/share/virtualenvs/BlogAntonio-J9LzUExB/bin/activate)
+    - `pipenv install`
+    - pada settings.py, set allowed_host: 'localhost'
+    - Database
+        - set: user, pass, database, --> settings.py
+        - `sudo service postgresql start`
+        - sudo su --> su - postgres --> psql
+        - `CREATE USER user_name WITH ENCRYPTED PASSWORD 'mypassword';`
+        - `CREATE DATABASE dbname OWNER rolename;`
+        - `GRANT ALL PRIVILEGES ON dbname TO aris;`
+    - `python manage.py migrate`
+    - `python manage.py createsuperuser`
+    - `python manage.py runserver`
+    - konten:
+        - localhost:8000
+        - localhost:8000/admin/
+    - Backup:
+        - `python manage.py dumpdata blog --indent=2 --output=blog/dumpdata/backup2022.json`
+    - Load:
+        - `python manage.py loaddata backup2022.json`
+- production
+    - git clone xxxx
+    - pada settings.py, set allowed_host: 'XXX' --> IP Public
+    - `docker-compose up`
+
+    
 </details>
 <details>
 <summary>DOCS</summary>

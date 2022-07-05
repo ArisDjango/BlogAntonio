@@ -1,0 +1,44 @@
+[
+{
+  "model": "blog.post",
+  "pk": 1,
+  "fields": {
+    "title": "tua",
+    "slug": "tua",
+    "author": 1,
+    "body": "dsadasdsad",
+    "publish": "2022-07-03T12:38:30Z",
+    "created": "2022-07-03T12:39:04.587Z",
+    "updated": "2022-07-03T12:40:11.991Z",
+    "status": "published"
+  }
+},
+{
+  "model": "blog.post",
+  "pk": 2,
+  "fields": {
+    "title": "Nikah Beda Agama Diuji ke MK",
+    "slug": "nikah-beda-agama-diuji-ke-mk",
+    "author": 1,
+    "body": "Jakarta - Pemerintah menolak melegalkan pernikahan beda agama. Namun, penolakan atas penikahan beda agama ini tetap memicu pro dan kontra. Apa pendapat Anda?\r\nSebagaimana diketahui, penolakan itu disampaikan dalam sidang judicial review UU Perkawinan di Mahkamah Konstitusi (MK) yang diajukan oleh warga Papua, Ramos Petege. Ramos Petege mengajukan uji materi UU Perkawinan ke MK lantaran tak bisa menikahi pujaan hatinya yang berbeda agama. Ramos beragama Katolik, sedangkan kekasihnya beragama Islam. Keduanya sudah menjalin hubungan 3 tahun lamanya.\r\n\r\nBaca artikel detiknews, \"Nikah Beda Agama Diuji ke MK, Anda Setuju Atau Menolak?\" selengkapnya https://news.detik.com/pro-kontra/d-6162839/nikah-beda-agama-diuji-ke-mk-anda-setuju-atau-menolak.",
+    "publish": "2022-07-05T06:07:17Z",
+    "created": "2022-07-05T06:09:43.497Z",
+    "updated": "2022-07-05T06:09:43.497Z",
+    "status": "published"
+  }
+},
+{
+  "model": "blog.post",
+  "pk": 3,
+  "fields": {
+    "title": "Anwar Abbas Kaget Dengar Gaji Pimpinan ACT: Materialistis dan Hedonistis",
+    "slug": "anwar-abbas-kaget-dengar-gaji-pimpinan-act-materialistis-dan-hedonistis",
+    "author": 1,
+    "body": "Jakarta - Wakil Ketua umum Majelis Ulama Indonesia (MUI) Anwar Abbas menyoroti heboh #AksiCepatTilep. Anwar Abbas mengatakan tindakan yang dilakukan petinggi Aksi Cepat Tanggap (ACT) memalukan jika penyelewengan dana benar terjadi.\r\n\"Kalau benar ada tindak penyelewengan yang dilakukan oleh petinggi ACT terhadap dana yang mereka himpun dari masyarakat, maka hal ini jelas-jelas memalukan,\" kata Anwar Abbas dalam keterangan tertulis, Senin (4/7/2022).\r\n\r\nDia meminta pihak yang berkepentingan turun tangan serta melakukan pengecekan jumlah kerugian yang terjadi dan masalah diselesaikan sesuai dengan hukum yang berlaku.\r\n\r\nBaca artikel detiknews, \"Anwar Abbas Kaget Dengar Gaji Pimpinan ACT: Materialistis dan Hedonistis\" selengkapnya https://news.detik.com/berita/d-6162160/anwar-abbas-kaget-dengar-gaji-pimpinan-act-materialistis-dan-hedonistis.",
+    "publish": "2022-07-05T06:14:03Z",
+    "created": "2022-07-05T06:14:25.377Z",
+    "updated": "2022-07-05T06:14:25.377Z",
+    "status": "published"
+  }
+}
+]
