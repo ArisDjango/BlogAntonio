@@ -3,7 +3,7 @@
 
 - Local
     - git clone xxxx
-    - `pipenv shell` (jika tidak bisa, activate manual di . /home/aris/.local/share/virtualenvs/BlogAntonio-J9LzUExB/bin/activate)
+    - `pipenv shell` (jika tidak bisa, activate manual di . source /home/aris/.local/share/virtualenvs/BlogAntonio-J9LzUExB/bin/activate)
     - `pipenv install`
     - pada settings.py, set allowed_host: 'localhost'
     - Database
